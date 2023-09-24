@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "strava-data"
+version = "0.1.0"
+description = ""
+authors = ["Antoine Toubhans <antoinet@sicara.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+streamlit = "^1.27.0"
+pandas = "^2.1.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

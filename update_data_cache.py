@@ -2,12 +2,9 @@ from stravalib import Client
 from tqdm import tqdm
 import pandas as pd
 import yaml
-from pathlib import Path
 
 from constants import DATA_PATH, STRAVA_PARAMS_FILE
 
-
-DATA_PATH = Path(DATA_PATH)
 
 # %%
 DATA_PATH.mkdir(exist_ok=True)

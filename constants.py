@@ -1,5 +1,7 @@
+from pathlib import Path
+
 # ------ Data
-DATA_PATH = "./cache"
+DATA_PATH = Path("./cache")
 STRAVA_PARAMS_FILE = "strava.yaml"
 
 

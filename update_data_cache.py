@@ -31,7 +31,7 @@ url = client.authorization_url(
 )
 
 # %% go to url and get code from response
-strava_code = "1bc5879aeee7312717b9c20b4a0c5e8a3f2db1ce"
+strava_code = "5a1a3e1cc88e2b8be2b748464c88cf4708048843"
 
 token_response = client.exchange_code_for_token(
     client_id=STRAVA_CLIENT_ID,

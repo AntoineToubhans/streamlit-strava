@@ -28,8 +28,15 @@ url = client.authorization_url(
 )
 
 # %% go to url and get code from response
-strava_code = "5a1a3e1cc88e2b8be2b748464c88cf4708048843"
+print(
+    "\033[92m >\033[00m Go to the following url and get the code from the url in response"
+)
+print(80 * "=")
+print(url)
+print(80 * "=")
+strava_code = input(" \033[92m >\033[00m Code ? ")
 
+# %%
 token_response = client.exchange_code_for_token(
     client_id=STRAVA_CLIENT_ID,
     client_secret=STRAVA_CLIENT_SECRET,

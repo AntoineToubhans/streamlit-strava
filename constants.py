@@ -6,7 +6,7 @@ STRAVA_PARAMS_FILE = "strava.yaml"
 
 
 # ------ Running
-VMA_KMH = 18  # km/h
+VMA_KMH = 18.5  # km/h
 VMA = VMA_KMH * 1000 / 3600
 SEUIL_AEROBIE = 0.78 * VMA
 SEUIL_ANAEROBIE = 0.87 * VMA

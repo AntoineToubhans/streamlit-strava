@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from constants import DATA_PATH
+from utils import get_zone
 
 
 @st.cache_data
@@ -17,7 +18,7 @@ def load_data():
             )
             for activity_id in activities.id.unique()
         ]
-    )
+    ).assign(speed_zone=lambda df: df.velocity_smooth.map(get_zone))
 
     return activities, streams
 
@@ -44,7 +45,22 @@ speed_by_week = (
 )
 st.bar_chart(speed_by_week, y="average_speed_kmh")
 
+# --- streams stats
+st.markdown("---")
+
+zone_speed_streams_df = (
+    streams_df.merge(activities_df, left_on="activity_id", right_on="id")
+    #    .groupby(pd.Grouper(key="start_date", freq="W-SUN"), "speed_zone")
+    #    .distance.sum()
+)
+
+st.write(len(streams_df))
+st.write(len(zone_speed_streams_df))
+st.write(activities_df.tail(10))
+st.write(zone_speed_streams_df.tail(10))
+
 # --- per activity
+st.markdown("---")
 selected_activity_idx = st.selectbox(
     label="Select an activity",
     options=activities_df.index,

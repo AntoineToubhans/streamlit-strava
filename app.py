@@ -31,19 +31,21 @@ activities_df, streams_df = load_data()
 label_freq_grouper = st.selectbox(label="Group by", options=["Week", "Month", "Year"])
 freq_grouper = {"Week": "W-SUN", "Month": "M", "Year": "Y"}[label_freq_grouper]
 
-grouped_distances = activities_df.groupby(
-    pd.Grouper(key="start_date", freq=freq_grouper)
-).distance.sum()
-st.bar_chart(grouped_distances)
+grouped_distances = (
+    activities_df.filter(items=["start_date", "distance"])
+    .groupby(pd.Grouper(key="start_date", freq=freq_grouper))
+    .sum()
+)
+st.bar_chart(grouped_distances, y="distance")
 
 # ---- global, mean speed week
-speed_by_week = (
-    activities_df.filter(items=["start_date", "distance", "elapsed_time"])
-    .groupby(pd.Grouper(key="start_date", freq="W-SUN"))
+grouped_average_speed = (
+    activities_df.filter(items=["start_date", "distance", "moving_time"])
+    .groupby(pd.Grouper(key="start_date", freq=freq_grouper))
     .sum()
-    .assign(average_speed_kmh=lambda df: df.distance / df.elapsed_time * 3.6)
+    .assign(average_speed_kmh=lambda df: df.distance / df.moving_time * 3.6)
 )
-st.bar_chart(speed_by_week, y="average_speed_kmh")
+st.bar_chart(grouped_average_speed, y="average_speed_kmh")
 
 # --- streams stats
 st.markdown("---")

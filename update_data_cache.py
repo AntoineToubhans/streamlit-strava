@@ -69,6 +69,7 @@ pd.DataFrame(
             "elapsed_time": activity.elapsed_time.seconds,
             "kudos_count": activity.kudos_count,
             "max_heartrate": activity.max_heartrate,
+            "moving_time": activity.moving_time.seconds,
             "name": activity.name,
             "start_date": activity.start_date,
         }

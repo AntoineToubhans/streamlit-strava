@@ -47,19 +47,34 @@ grouped_average_speed = (
 )
 st.bar_chart(grouped_average_speed, y="average_speed_kmh")
 
-# --- streams stats
+# --- streams stats by zone
 st.markdown("---")
 
-zone_speed_streams_df = (
-    streams_df.merge(activities_df, left_on="activity_id", right_on="id")
-    #    .groupby(pd.Grouper(key="start_date", freq="W-SUN"), "speed_zone")
-    #    .distance.sum()
+zone_speed_streams_df = pd.pivot_table(
+    data=(
+        streams_df.merge(
+            activities_df.rename(
+                columns={
+                    "id": "activity_id",
+                    "distance": "total_distance",
+                }
+            ),
+            on="activity_id",
+        )
+        .filter(items=["start_date", "speed_zone"])
+        .assign(duration=1)
+        .groupby(
+            [pd.Grouper(key="start_date", freq="W-SUN"), "speed_zone"], as_index=False
+        )
+        .duration.sum()
+    ),
+    values="duration",
+    index="start_date",
+    columns="speed_zone",
+    aggfunc="sum",
 )
 
-st.write(len(streams_df))
-st.write(len(zone_speed_streams_df))
-st.write(activities_df.tail(10))
-st.write(zone_speed_streams_df.tail(10))
+st.bar_chart(zone_speed_streams_df)
 
 # --- per activity
 st.markdown("---")

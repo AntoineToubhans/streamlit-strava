@@ -1,3 +1,4 @@
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -24,6 +25,35 @@ def load_data():
 
 
 def show_activities_stats(grouper: pd.Grouper):
+    data = (
+        activities_df.filter(items=["start_date", "distance"])
+        .groupby(grouper)
+        .sum()
+        .reset_index()
+    )
+    bar = (
+        alt.Chart(data)
+        .mark_bar()
+        .encode(
+            x="start_date:T",
+            y=r"distance:Q",
+        )
+    )
+    line = (
+        alt.Chart(data)
+        .mark_line(color="red")
+        .transform_window(
+            rolling_mean="mean(distance)",
+            frame=[-9, 0],
+        )
+        .encode(
+            x="start_date:T",
+            y="rolling_mean:Q",
+        )
+    )
+    st.altair_chart(bar + line, use_container_width=True)
+    st.write(data)
+
     grouped_distances = (
         activities_df.filter(items=["start_date", "distance"]).groupby(grouper).sum()
     )
@@ -40,29 +70,63 @@ def show_activities_stats(grouper: pd.Grouper):
 
 
 def show_zone_stats(grouper: pd.Grouper):
-    zone_speed_streams_df = pd.pivot_table(
-        data=(
-            streams_df.merge(
-                activities_df.rename(
-                    columns={
-                        "id": "activity_id",
-                        "distance": "total_distance",
-                    }
-                ),
-                on="activity_id",
-            )
-            .filter(items=["start_date", "speed_zone"])
-            .assign(duration=1)
-            .groupby([grouper, "speed_zone"], as_index=False)
-            .duration.sum()
-        ),
+    zone_speed_streams_df = (
+        streams_df.merge(
+            activities_df.rename(
+                columns={
+                    "id": "activity_id",
+                    "distance": "total_distance",
+                }
+            ),
+            on="activity_id",
+        )
+        .filter(items=["start_date", "speed_zone"])
+        .assign(duration=1)
+        .groupby([grouper, "speed_zone"], as_index=False)
+        .duration.sum()
+    )
+
+    abs_zone_bar = (
+        alt.Chart(zone_speed_streams_df)
+        .mark_bar()
+        .encode(
+            x=alt.X("start_date:T").title(""),
+            y=alt.Y("duration:Q").title("Time (s)"),
+            color="speed_zone:N",
+        )
+    )
+
+    normalized_zones_bar = (
+        alt.Chart(zone_speed_streams_df)
+        .mark_bar()
+        .encode(
+            x=alt.X("start_date:T").title(""),
+            y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)"),
+            color="speed_zone:N",
+        )
+    )
+
+    charts = [
+        abs_zone_bar,
+        normalized_zones_bar,
+    ]
+    charts = [chart.properties(height=200, width=800) for chart in charts]
+    final_vchart = alt.vconcat(*charts).configure_legend(
+        orient="bottom", direction="horizontal", title=None
+    )
+
+    st.altair_chart(final_vchart, use_container_width=True)
+
+    st.write("---")
+    pivot_zone_speed_streams_df = pd.pivot_table(
+        data=zone_speed_streams_df,
         values="duration",
         index="start_date",
         columns="speed_zone",
         aggfunc="sum",
     )
 
-    st.bar_chart(zone_speed_streams_df)
+    st.bar_chart(pivot_zone_speed_streams_df)
 
 
 def show_one_activity_stats():

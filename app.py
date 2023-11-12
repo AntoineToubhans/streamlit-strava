@@ -163,6 +163,7 @@ def show_one_activity_stats():
     )
 
 
+st.set_page_config(layout="wide")
 st.sidebar.title("Strava-data app")
 LABEL_FREQ_GROUPER = st.sidebar.selectbox(
     label="Group by", options=["Week", "Month", "Year"]

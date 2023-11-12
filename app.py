@@ -36,7 +36,7 @@ def show_activities_stats(grouper: pd.Grouper):
         .mark_bar()
         .encode(
             x="start_date:T",
-            y=r"distance:Q",
+            y="distance:Q",
         )
     )
     line = (

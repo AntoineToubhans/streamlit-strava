@@ -86,24 +86,21 @@ def show_zone_stats(grouper: pd.Grouper):
         .duration.sum()
     )
 
-    abs_zone_bar = (
+    base = (
         alt.Chart(zone_speed_streams_df)
         .mark_bar()
         .encode(
-            x=alt.X("start_date:T").title(""),
-            y=alt.Y("duration:Q").title("Time (s)"),
+            x=alt.X("start_date:T").title("").axis(format="%b %y", labelAngle=285),
             color="speed_zone:N",
         )
     )
 
-    normalized_zones_bar = (
-        alt.Chart(zone_speed_streams_df)
-        .mark_bar()
-        .encode(
-            x=alt.X("start_date:T").title(""),
-            y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)"),
-            color="speed_zone:N",
-        )
+    abs_zone_bar = base.encode(
+        y=alt.Y("duration:Q").title("Time (s)"),
+    )
+
+    normalized_zones_bar = base.encode(
+        y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)"),
     )
 
     charts = [

@@ -107,7 +107,7 @@ def show_zone_stats(grouper: pd.Grouper):
         abs_zone_bar,
         normalized_zones_bar,
     ]
-    charts = [chart.properties(height=200, width=800) for chart in charts]
+    charts = [chart.properties(height=200, width=850) for chart in charts]
     final_vchart = (
         alt.vconcat(*charts)
         .configure_legend(orient="bottom", direction="horizontal", title=None)

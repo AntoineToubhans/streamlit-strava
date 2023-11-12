@@ -17,3 +17,15 @@ def get_zone(speed_in_ms: int | float) -> str:
             return "Z2"
         case _:
             return "Z1"
+
+
+def format_speed_ms_to_per_km_str(speed_in_ms: int | float) -> str:
+    speed_in_sec_per_km = 1000 / speed_in_ms
+    if speed_in_ms > 10 * 60 * 60:
+        raise ValueError(f"Input speed > 1 hour per km")
+
+    raw_minutes, raw_seconds = divmod(speed_in_sec_per_km, 60)
+    minutes = int(raw_minutes)
+    seconds = int(raw_seconds)
+
+    return f"{minutes}:{seconds:02}"

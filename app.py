@@ -108,8 +108,10 @@ def show_zone_stats(grouper: pd.Grouper):
         normalized_zones_bar,
     ]
     charts = [chart.properties(height=200, width=800) for chart in charts]
-    final_vchart = alt.vconcat(*charts).configure_legend(
-        orient="bottom", direction="horizontal", title=None
+    final_vchart = (
+        alt.vconcat(*charts)
+        .configure_legend(orient="bottom", direction="horizontal", title=None)
+        .interactive(bind_y=False)
     )
 
     st.altair_chart(final_vchart, use_container_width=True)

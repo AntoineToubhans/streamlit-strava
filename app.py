@@ -86,13 +86,17 @@ def show_zone_stats(grouper: pd.Grouper):
         .duration.sum()
     )
 
+    legend_selection = alt.selection_point(fields=["speed_zone"], bind="legend")
+
     base = (
         alt.Chart(zone_speed_streams_df)
         .mark_bar()
         .encode(
             x=alt.X("start_date:T").title("").axis(format="%b %y", labelAngle=285),
             color="speed_zone:N",
+            opacity=alt.condition(legend_selection, alt.value(1), alt.value(0.2)),
         )
+        .add_params(legend_selection)
     )
 
     abs_zone_bar = base.encode(

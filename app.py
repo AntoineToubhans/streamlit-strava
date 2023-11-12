@@ -92,8 +92,10 @@ def show_zone_stats(grouper: pd.Grouper):
         alt.Chart(zone_speed_streams_df)
         .mark_bar()
         .encode(
-            x=alt.X("start_date:T").title("").axis(format="%b %y", labelAngle=285),
-            color="speed_zone:N",
+            x=alt.X("start_date:T").title(""),
+            color=alt.condition(
+                legend_selection, alt.Color("speed_zone:N"), alt.value("#aaa")
+            ),
             opacity=alt.condition(legend_selection, alt.value(1), alt.value(0.2)),
         )
         .add_params(legend_selection)
@@ -101,7 +103,7 @@ def show_zone_stats(grouper: pd.Grouper):
 
     abs_zone_bar = base.encode(
         y=alt.Y("duration:Q").title("Time (s)"),
-    )
+    ).transform_filter(legend_selection)
 
     normalized_zones_bar = base.encode(
         y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)"),
@@ -137,7 +139,7 @@ def show_one_activity_stats():
     selected_activity_idx = st.selectbox(
         label="Select an activity",
         options=activities_df.index,
-        format_func=lambda idx: f"{activities_df.loc[idx, 'start_date']} - {activities_df.loc[idx, 'name']}",
+        format_func=lambda idx: f"{activities_df.loc[idx, 'start_date']} - {activities_df.loc[idx, 'distance']/1000:.2f}km - {activities_df.loc[idx, 'name']}",
     )
 
     selected_activity = activities_df.loc[selected_activity_idx]

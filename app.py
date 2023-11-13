@@ -52,7 +52,6 @@ def show_activities_stats(grouper: pd.Grouper):
         )
     )
     st.altair_chart(bar + line, use_container_width=True)
-    st.write(data)
 
     grouped_distances = (
         activities_df.filter(items=["start_date", "distance"]).groupby(grouper).sum()

@@ -70,7 +70,8 @@ def show_activities_stats(pd_grouper: pd.Grouper):
     st.bar_chart(grouped_average_speed, y="average_speed_kmh")
 
 
-def show_zone_stats(pd_grouper: pd.Grouper):
+def show_zone_stats(pd_grouper: pd.Grouper, alt_timeunit: str):
+    # %% 1. Process data
     zone_speed_streams_df = (
         streams_df.merge(
             activities_df.rename(
@@ -87,13 +88,31 @@ def show_zone_stats(pd_grouper: pd.Grouper):
         .duration.sum()
     )
 
+    # %% 2. Common alt parts
+    year_rules = (
+        alt.Chart(YEARS_DF)
+        .mark_rule(opacity=0.5, strokeWidth=2)
+        .encode(x=alt.X("year(date):T"), tooltip="year(date)")
+    )
+
+    year_rules_labels = year_rules.mark_text(
+        opacity=0.7, align="left", dx=3, dy=3, baseline="line-top", fontSize=12
+    ).encode(text="year(date):T", y=alt.value(0))
+
+    year_chart = year_rules + year_rules_labels
+
     legend_selection = alt.selection_point(fields=["speed_zone"], bind="legend")
 
     base = (
         alt.Chart(zone_speed_streams_df)
-        .mark_bar()
+        .mark_bar(binSpacing=2)
         .encode(
-            x=alt.X("start_date:T").title(""),
+            x=alt.X(
+                "start_date",
+                timeUnit=alt_timeunit,
+                type="temporal",
+                axis=alt.Axis(format="%d %b %y", labelOverlap=False, labelAngle=-45),
+            ).title(""),
             color=alt.condition(
                 legend_selection, alt.Color("speed_zone:N"), alt.value("#aaa")
             ),
@@ -102,37 +121,27 @@ def show_zone_stats(pd_grouper: pd.Grouper):
         .add_params(legend_selection)
     )
 
-    abs_zone_bar = base.encode(
-        y=alt.Y("duration:Q").title("Time (s)"),
+    # %% 3. Define charts
+    abs_zone_bars = base.encode(
+        y=alt.Y("duration:Q").title("Time (s)")
     ).transform_filter(legend_selection)
 
-    normalized_zones_bar = base.encode(
-        y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)"),
+    normalized_zones_bars = base.encode(
+        y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)")
     )
 
     charts = [
-        abs_zone_bar,
-        normalized_zones_bar,
+        abs_zone_bars,
+        normalized_zones_bars,
     ]
-    charts = [chart.properties(height=200, width=850) for chart in charts]
+    charts = [chart.properties(height=200, width=850) + year_chart for chart in charts]
     final_vchart = (
         alt.vconcat(*charts)
-        .configure_legend(orient="bottom", direction="horizontal", title=None)
+        .configure_legend(orient="top", direction="horizontal", title=None)
         .interactive(bind_y=False)
     )
 
     st.altair_chart(final_vchart, use_container_width=True)
-
-    st.write("---")
-    pivot_zone_speed_streams_df = pd.pivot_table(
-        data=zone_speed_streams_df,
-        values="duration",
-        index="start_date",
-        columns="speed_zone",
-        aggfunc="sum",
-    )
-
-    st.bar_chart(pivot_zone_speed_streams_df)
 
 
 def show_one_activity_stats():
@@ -207,6 +216,6 @@ activities_stats_tab, zone_stats_tab, one_activity_stats_tab = st.tabs(
 with activities_stats_tab:
     show_activities_stats(pd_grouper=PD_GROUPER)
 with zone_stats_tab:
-    show_zone_stats(pd_grouper=PD_GROUPER)
+    show_zone_stats(pd_grouper=PD_GROUPER, alt_timeunit=ALT_TIMEUNIT)
 with one_activity_stats_tab:
     show_one_activity_stats()

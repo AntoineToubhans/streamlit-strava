@@ -1,3 +1,5 @@
+import datetime
+
 import altair as alt
 import pandas as pd
 import streamlit as st
@@ -24,10 +26,10 @@ def load_data():
     return activities, streams
 
 
-def show_activities_stats(grouper: pd.Grouper):
+def show_activities_stats(pd_grouper: pd.Grouper):
     data = (
         activities_df.filter(items=["start_date", "distance"])
-        .groupby(grouper)
+        .groupby(pd_grouper)
         .sum()
         .reset_index()
     )
@@ -54,21 +56,21 @@ def show_activities_stats(grouper: pd.Grouper):
     st.altair_chart(bar + line, use_container_width=True)
 
     grouped_distances = (
-        activities_df.filter(items=["start_date", "distance"]).groupby(grouper).sum()
+        activities_df.filter(items=["start_date", "distance"]).groupby(pd_grouper).sum()
     )
     st.bar_chart(grouped_distances, y="distance")
 
     # ---- global, mean speed week
     grouped_average_speed = (
         activities_df.filter(items=["start_date", "distance", "moving_time"])
-        .groupby(grouper)
+        .groupby(pd_grouper)
         .sum()
         .assign(average_speed_kmh=lambda df: df.distance / df.moving_time * 3.6)
     )
     st.bar_chart(grouped_average_speed, y="average_speed_kmh")
 
 
-def show_zone_stats(grouper: pd.Grouper):
+def show_zone_stats(pd_grouper: pd.Grouper):
     zone_speed_streams_df = (
         streams_df.merge(
             activities_df.rename(
@@ -81,7 +83,7 @@ def show_zone_stats(grouper: pd.Grouper):
         )
         .filter(items=["start_date", "speed_zone"])
         .assign(duration=1)
-        .groupby([grouper, "speed_zone"], as_index=False)
+        .groupby([pd_grouper, "speed_zone"], as_index=False)
         .duration.sum()
     )
 
@@ -170,13 +172,32 @@ def show_one_activity_stats():
     )
 
 
+YEARS_DF = pd.DataFrame(
+    {
+        "date": [datetime.datetime(year, 1, 1) for year in [2022, 2023, 2024]],
+    }
+)
+
 st.set_page_config(layout="wide")
 st.sidebar.title("Strava-data app")
+
+WEEK = "Week"
+MONTH = "Month"
+QUARTER = "Quarter"
+YEAR = "Year"
 LABEL_FREQ_GROUPER = st.sidebar.selectbox(
-    label="Group by", options=["Week", "Month", "Year"]
+    label="Group by", options=[WEEK, MONTH, QUARTER, YEAR]
 )
-FREQ_GROUPER = {"Week": "W-SUN", "Month": "M", "Year": "Y"}[LABEL_FREQ_GROUPER]
-GROUPER = pd.Grouper(key="start_date", freq=FREQ_GROUPER)
+PD_GROUPER = pd.Grouper(
+    key="start_date",
+    freq={WEEK: "W-SUN", MONTH: "M", QUARTER: "Q", YEAR: "Y"}[LABEL_FREQ_GROUPER],
+)
+ALT_TIMEUNIT = {
+    WEEK: "yearweek",
+    MONTH: "yearmonth",
+    QUARTER: "yearquarter",
+    YEAR: "year",
+}[LABEL_FREQ_GROUPER]
 
 activities_df, streams_df = load_data()
 
@@ -184,8 +205,8 @@ activities_stats_tab, zone_stats_tab, one_activity_stats_tab = st.tabs(
     ["All", "Zones", "One activity"]
 )
 with activities_stats_tab:
-    show_activities_stats(grouper=GROUPER)
+    show_activities_stats(pd_grouper=PD_GROUPER)
 with zone_stats_tab:
-    show_zone_stats(grouper=GROUPER)
+    show_zone_stats(pd_grouper=PD_GROUPER)
 with one_activity_stats_tab:
     show_one_activity_stats()

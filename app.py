@@ -99,20 +99,13 @@ def show_zone_stats(pd_grouper: pd.Grouper, alt_timeunit: str):
         opacity=0.7, align="left", dx=3, dy=3, baseline="line-top", fontSize=12
     ).encode(text="year(date):T", y=alt.value(0))
 
-    year_chart = year_rules + year_rules_labels
-
+    brush = alt.selection_interval(encodings=["x"])
     legend_selection = alt.selection_point(fields=["speed_zone"], bind="legend")
 
     base = (
         alt.Chart(zone_speed_streams_df)
         .mark_bar(binSpacing=2)
         .encode(
-            x=alt.X(
-                "start_date",
-                timeUnit=alt_timeunit,
-                type="temporal",
-                axis=alt.Axis(format="%d %b %y", labelOverlap=False, labelAngle=-45),
-            ).title(""),
             color=alt.condition(
                 legend_selection, alt.Color("speed_zone:N"), alt.value("#aaa")
             ),
@@ -123,25 +116,59 @@ def show_zone_stats(pd_grouper: pd.Grouper, alt_timeunit: str):
 
     # %% 3. Define charts
     abs_zone_bars = base.encode(
-        y=alt.Y("duration:Q").title("Time (s)")
+        x=alt.X(
+            "start_date",
+            timeUnit=alt_timeunit,
+            type="temporal",
+            axis=alt.Axis(labels=False),
+            scale=alt.Scale(domain=brush),
+        ).title(""),
+        y=alt.Y("duration:Q").title("Time (s)"),
     ).transform_filter(legend_selection)
 
     normalized_zones_bars = base.encode(
-        y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)")
+        x=alt.X(
+            "start_date",
+            timeUnit=alt_timeunit,
+            type="temporal",
+            axis=alt.Axis(format="%d %b %y", labelOverlap=False, labelAngle=-45),
+            scale=alt.Scale(domain=brush),
+        ).title(""),
+        y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)"),
     )
 
-    charts = [
-        abs_zone_bars,
-        normalized_zones_bars,
-    ]
-    charts = [chart.properties(height=200, width=850) + year_chart for chart in charts]
-    final_vchart = (
-        alt.vconcat(*charts)
-        .configure_legend(orient="top", direction="horizontal", title=None)
-        .interactive(bind_y=False)
+    distance_area = (
+        alt.Chart(
+            activities_df.filter(items=["start_date", "distance"])
+            .groupby(pd_grouper)
+            .sum()
+            .assign(distance=lambda df: df.distance / 1000)  # in km
+            .reset_index()
+        )
+        .mark_area(interpolate="natural")
+        .encode(
+            x=alt.X(
+                "start_date",
+                timeUnit=alt_timeunit,
+                type="temporal",
+                axis=alt.Axis(format="%d %b", labelOverlap=False, labelAngle=-45),
+            ).title(""),
+            y=alt.Y("sum(distance):Q").title("Distance (km)"),
+        )
+        .add_params(brush)
     )
 
-    st.altair_chart(final_vchart, use_container_width=True)
+    final_chart = (
+        abs_zone_bars.properties(height=200, width=900)
+        & normalized_zones_bars.properties(height=150, width=900)
+        & (
+            distance_area.properties(height=80, width=900)
+            + year_rules
+            + year_rules_labels
+        )
+    ).configure_legend(orient="top", direction="horizontal", title=None)
+
+    st.altair_chart(final_chart, use_container_width=True)
 
 
 def show_one_activity_stats():

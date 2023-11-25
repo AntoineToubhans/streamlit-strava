@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from constants import DATA_PATH
+from st_utils import get_temporal_grouper
 from zone_utils import get_speed_zone_label
 
 
@@ -26,7 +27,9 @@ def load_data():
     return activities, streams
 
 
-def show_activities_stats(pd_grouper: pd.Grouper):
+def show_global_volume():
+    pd_grouper, _ = get_temporal_grouper(st_elt=st.sidebar, key="global-volume")
+
     data = (
         activities_df.filter(items=["start_date", "distance"])
         .groupby(pd_grouper)
@@ -70,7 +73,8 @@ def show_activities_stats(pd_grouper: pd.Grouper):
     st.bar_chart(grouped_average_speed, y="average_speed_kmh")
 
 
-def show_zone_stats(pd_grouper: pd.Grouper, alt_timeunit: str):
+def show_zone_stats():
+    pd_grouper, alt_timeunit = get_temporal_grouper(st_elt=st.sidebar, key="zone-stats")
     # %% 1. Process data
     zone_speed_streams_df = (
         streams_df.merge(
@@ -217,32 +221,14 @@ YEARS_DF = pd.DataFrame(
 st.set_page_config(layout="wide")
 st.sidebar.title("Strava-data app")
 
-WEEK = "Week"
-MONTH = "Month"
-QUARTER = "Quarter"
-YEAR = "Year"
-LABEL_FREQ_GROUPER = st.sidebar.selectbox(
-    label="Group by", options=[WEEK, MONTH, QUARTER, YEAR]
-)
-PD_GROUPER = pd.Grouper(
-    key="start_date",
-    freq={WEEK: "W-SUN", MONTH: "M", QUARTER: "Q", YEAR: "Y"}[LABEL_FREQ_GROUPER],
-)
-ALT_TIMEUNIT = {
-    WEEK: "yearweek",
-    MONTH: "yearmonth",
-    QUARTER: "yearquarter",
-    YEAR: "year",
-}[LABEL_FREQ_GROUPER]
-
 activities_df, streams_df = load_data()
 
 activities_stats_tab, zone_stats_tab, one_activity_stats_tab = st.tabs(
     ["All", "Zones", "One activity"]
 )
 with activities_stats_tab:
-    show_activities_stats(pd_grouper=PD_GROUPER)
+    show_global_volume()
 with zone_stats_tab:
-    show_zone_stats(pd_grouper=PD_GROUPER, alt_timeunit=ALT_TIMEUNIT)
+    show_zone_stats()
 with one_activity_stats_tab:
     show_one_activity_stats()

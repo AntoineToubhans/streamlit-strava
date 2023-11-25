@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from constants import DATA_PATH
-from utils import get_zone
+from zone_utils import get_speed_zone_label
 
 
 @st.cache_data
@@ -21,7 +21,7 @@ def load_data():
             )
             for activity_id in activities.id.unique()
         ]
-    ).assign(speed_zone=lambda df: df.velocity_smooth.map(get_zone))
+    ).assign(speed_zone=lambda df: df.velocity_smooth.map(get_speed_zone_label))
 
     return activities, streams
 

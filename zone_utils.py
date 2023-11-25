@@ -21,7 +21,7 @@ Z_5_6_STR = format_speed_ms_to_per_km_str(Z_5_6)
 Z_6_7_STR = format_speed_ms_to_per_km_str(Z_6_7)
 
 
-def get_zone(speed_in_ms: int | float) -> str:
+def get_speed_zone_label(speed_in_ms: int | float) -> str:
     match speed_in_ms:
         case speed_in_ms if speed_in_ms > Z_6_7:
             return f"Z7 (> {Z_6_7_STR})"

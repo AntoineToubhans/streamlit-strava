@@ -19,4 +19,4 @@ Then run: `poetry run python update_data_cache.py`
 
 ### Backog
 
-- Use [timeunits](https://altair-viz.github.io/user_guide/transform/timeunit.html#user-guide-timeunit-transform) to group by periods. :warning: not use it will work for weeks
+- Script uploader: bouger vers le streamlit (query_params pour choper le token)

@@ -1,21 +1,12 @@
 from stravalib import Client
 from tqdm import tqdm
 import pandas as pd
-import yaml
 
-from constants import DATA_PATH, STRAVA_PARAMS_FILE
+from constants import DATA_PATH, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
 
 
 # %%
 DATA_PATH.mkdir(exist_ok=True)
-
-
-# %%
-with open(STRAVA_PARAMS_FILE) as f:
-    STRAVA_PARAMS = yaml.safe_load(f)
-
-STRAVA_CLIENT_ID = STRAVA_PARAMS["client_id"]
-STRAVA_CLIENT_SECRET = STRAVA_PARAMS["client_secret"]
 
 
 # %%

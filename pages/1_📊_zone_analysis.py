@@ -17,8 +17,9 @@ years_df = pd.DataFrame(
 
 
 activities_df, streams_df = load_data_from_cache()
+with st.sidebar:
+    pd_grouper, alt_timeunit = get_temporal_grouper(key="zone-stats")
 
-pd_grouper, alt_timeunit = get_temporal_grouper(st_elt=st.sidebar, key="zone-stats")
 # %% 1. Process data
 zone_speed_streams_df = (
     streams_df.merge(

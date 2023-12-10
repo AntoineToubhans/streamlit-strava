@@ -6,7 +6,8 @@ from utils.data import get_temporal_grouper
 
 
 activities_df, streams_df = load_data_from_cache()
-pd_grouper, _ = get_temporal_grouper(st_elt=st.sidebar, key="global-volume")
+with st.sidebar:
+    pd_grouper, _ = get_temporal_grouper(key="global-volume")
 
 data = (
     activities_df.filter(items=["start_date", "distance"])

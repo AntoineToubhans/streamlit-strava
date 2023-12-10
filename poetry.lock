@@ -1494,6 +1494,21 @@ files = [
 ]
 
 [[package]]
+name = "stqdm"
+version = "0.0.5"
+description = "Easy progress bar for streamlit based on the awesome streamlit.progress and tqdm"
+optional = false
+python-versions = ">=3.7.2,<4.0.0"
+files = [
+    {file = "stqdm-0.0.5-py3-none-any.whl", hash = "sha256:3177858c1ce5244821f13cc7cbd88a6dc8f154ef1bd12d2fa3342f2a9caf8843"},
+    {file = "stqdm-0.0.5.tar.gz", hash = "sha256:1bed78e60068da3afc7c6d87a5388006036633aa2fe2e19fa7db46483ef1227e"},
+]
+
+[package.dependencies]
+streamlit = ">=0.66"
+tqdm = ">=4.50"
+
+[[package]]
 name = "stravalib"
 version = "1.5"
 description = "A Python package that makes it easy to access and download data from the Strava V3 REST API."
@@ -1761,4 +1776,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "9225d0c74645b324533b5c33858b969d2fd13ffde5d7d3a7f7fd2d0dc91f0c24"
+content-hash = "0143778c4af35f6588f151ff4b9d866dd90e381fa2161b05e4d7c60d3d1102d0"

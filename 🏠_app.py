@@ -1,6 +1,6 @@
 import streamlit as st
 
-from utils.data_cache import load_data_from_cache
+from utils.data_cache import load_data_from_cache, update_cache
 from utils.strava import get_strava_client, st_strava_authorization_button
 
 
@@ -59,4 +59,4 @@ with st_action_col:
 if st.button(
     label="Download activities", disabled=not strava_user_is_logged_in, type="primary"
 ):
-    st.success("Loading data")
+    update_cache()

@@ -4,8 +4,8 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from data_utils import load_data
-from st_utils import get_temporal_grouper
+from utils.data_cache import load_data_from_cache
+from utils.data import get_temporal_grouper
 
 
 # %% 0. Load data
@@ -16,7 +16,7 @@ years_df = pd.DataFrame(
 )
 
 
-activities_df, streams_df = load_data()
+activities_df, streams_df = load_data_from_cache()
 
 pd_grouper, alt_timeunit = get_temporal_grouper(st_elt=st.sidebar, key="zone-stats")
 # %% 1. Process data

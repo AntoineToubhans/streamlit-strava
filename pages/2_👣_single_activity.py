@@ -1,9 +1,9 @@
 import streamlit as st
 
-from data_utils import load_data
+from utils.data_cache import load_data_from_cache
 
 
-activities_df, streams_df = load_data()
+activities_df, streams_df = load_data_from_cache()
 
 selected_activity_idx = st.selectbox(
     label="Select an activity",

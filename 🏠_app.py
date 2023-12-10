@@ -1,11 +1,12 @@
 import streamlit as st
 
-from data_utils import load_data, get_strava_client, st_strava_authorization_button
+from utils.data_cache import load_data_from_cache
+from utils.strava import get_strava_client, st_strava_authorization_button
 
 
 st.set_page_config(layout="wide")
 
-activities_df, streams_df = load_data()
+activities_df, streams_df = load_data_from_cache()
 
 st.title("Strava Data App")
 

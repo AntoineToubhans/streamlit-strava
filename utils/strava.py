@@ -1,31 +1,10 @@
 import time
-import pandas as pd
 from stravalib import Client as StravaClient
 import streamlit as st
 
-from constants import DATA_PATH, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
-from zone_utils import get_speed_zone_label
+from constants import STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
 
 
-@st.cache_data
-def load_data():
-    activities = pd.read_csv(
-        DATA_PATH / "activities.csv", index_col=0, parse_dates=["start_date"]
-    )
-
-    streams = pd.concat(
-        [
-            pd.read_csv(DATA_PATH / f"{activity_id}.csv", index_col=0).assign(
-                activity_id=activity_id
-            )
-            for activity_id in activities.id.unique()
-        ]
-    ).assign(speed_zone=lambda df: df.velocity_smooth.map(get_speed_zone_label))
-
-    return activities, streams
-
-
-# %% ----- Stava utils
 def _get_strava_code() -> str | None:
     strava_codes = st.experimental_get_query_params().get("code")
     if strava_codes is None or strava_codes == []:

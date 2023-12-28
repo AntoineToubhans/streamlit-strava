@@ -40,37 +40,72 @@ base = alt.Chart(selected_activity_streams).transform_window(
     frame=[-smooth_span, 0],
 )
 
-speed_chart = base.mark_line().encode(
-    x=x_axis,
-    y=alt.Y(
-        "rolling_mean_speed_kmh",
-        type="quantitative",
-    ).title("Speed (Km/h)"),
+# %% Line tooltip
+nearest = alt.selection_point(
+    nearest=True,
+    on="mouseover",
+    fields=[selected_x_unit_col],
+    empty=False,
 )
 
-heartrate_chart = base.mark_line().encode(
-    x=x_axis,
-    y=alt.Y("heartrate", type="quantitative", scale=alt.Scale(domain=[90, 190])).title(
-        "Heartrate (/min)"
+selectors = base.mark_point().encode(x=x_axis, opacity=alt.value(0)).add_params(nearest)
+
+
+def add_vertical_line_tooltip(
+    base_chart: alt.Chart, tooltip_text: alt.Text
+) -> alt.Chart:
+    points = base_chart.mark_point(size=100, color="gray", opacity=0.7).encode(
+        opacity=alt.condition(nearest, alt.value(1), alt.value(0))
+    )
+    rules = (
+        base.mark_rule(color="gray", opacity=0.7, strokeWidth=2)
+        .encode(x=x_axis)
+        .transform_filter(nearest)
+    )
+    text = rules.mark_text(align="left", dx=5, y=10).encode(
+        text=tooltip_text,
+    )
+
+    return base_chart + selectors + points + rules + text
+
+
+# %% Charts
+speed_chart = add_vertical_line_tooltip(
+    base_chart=base.mark_line().encode(
+        x=x_axis,
+        y=alt.Y(
+            "rolling_mean_speed_kmh",
+            type="quantitative",
+        ).title("Speed (Km/h)"),
     ),
+    tooltip_text=alt.Text("rolling_mean_speed_kmh:Q", format=".2f"),
 )
 
-altitude_chart = base.mark_area(interpolate="natural", line=True).encode(
-    x=x_axis.title(selected_x_unit_label).axis(labels=True),
-    y=alt.Y("altitude", type="quantitative", title="Altitude (m)"),
+heartrate_chart = add_vertical_line_tooltip(
+    base_chart=base.mark_line().encode(
+        x=x_axis,
+        y=alt.Y(
+            "heartrate", type="quantitative", scale=alt.Scale(domain=[90, 190])
+        ).title("Heartrate (/min)"),
+    ),
+    tooltip_text=alt.Text("heartrate:Q"),
+)
+
+altitude_chart = add_vertical_line_tooltip(
+    base_chart=base.mark_area(interpolate="natural", line=True).encode(
+        x=x_axis.title(selected_x_unit_label).axis(labels=True),
+        y=alt.Y("altitude", type="quantitative", title="Altitude (m)"),
+    ),
+    tooltip_text=alt.Text("altitude:Q"),
 )
 
 global_width = 900
 
 chart = (
-    (
-        speed_chart.properties(height=200, width=global_width)
-        & heartrate_chart.properties(height=120, width=global_width)
-        & altitude_chart.properties(height=120, width=global_width)
-    )
-    .interactive(bind_y=False)
-    .resolve_scale(y="independent")
-)
+    speed_chart.properties(height=200, width=global_width)
+    & heartrate_chart.properties(height=120, width=global_width)
+    & altitude_chart.properties(height=120, width=global_width)
+).interactive(bind_y=False)
 
 st.altair_chart(chart, use_container_width=True)
 
@@ -88,3 +123,8 @@ col_b.write(
 col_b.write(
     f"Distance (velocity_smooth.sum()): {selected_activity_streams.velocity_smooth.sum()}"
 )
+
+st.write(
+    f"N data points for activity (before sub-sampling): {len(selected_activity_streams)}"
+)
+st.write(selected_activity)

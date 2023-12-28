@@ -5,6 +5,7 @@ from utils.data_cache import load_data_from_cache
 
 DISTANCE_KM = "Distance (km)"
 TIME_S = "Time (s)"
+N_POINTS = 500  # for sampling
 
 activities_df, streams_df = load_data_from_cache()
 
@@ -32,10 +33,13 @@ selected_activity_streams = streams_df.loc[
     distance_km=lambda df: df.distance / 1000,
     speed_kmh=lambda df: df.velocity_smooth * 3.6,
 )
+sampled_selected_activity_streams = selected_activity_streams.iloc[
+    :: len(selected_activity_streams) // N_POINTS
+]
 
 x_axis = alt.X(selected_x_unit_col, type="quantitative", title="").axis(labels=False)
 
-base = alt.Chart(selected_activity_streams).transform_window(
+base = alt.Chart(sampled_selected_activity_streams).transform_window(
     rolling_mean_speed_kmh="mean(speed_kmh)",
     frame=[-smooth_span, 0],
 )
@@ -126,5 +130,8 @@ col_b.write(
 
 st.write(
     f"N data points for activity (before sub-sampling): {len(selected_activity_streams)}"
+)
+st.write(
+    f"N data points for activity (after sub-sampling): {len(sampled_selected_activity_streams)}"
 )
 st.write(selected_activity)

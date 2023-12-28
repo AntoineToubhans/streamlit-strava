@@ -14,7 +14,9 @@ with st.sidebar:
         options=activities_df.index[::-1],
         format_func=lambda idx: f"{activities_df.loc[idx, 'start_date'].strftime('%y-%m-%d')}/ {activities_df.loc[idx, 'name']} ({activities_df.loc[idx, 'distance']/1000:.2f}km)",
     )
-    selected_x_unit_label = st.selectbox(label="Y unit", options=[TIME_S, DISTANCE_KM])
+    selected_x_unit_label = st.selectbox(
+        label="X axis unit", options=[TIME_S, DISTANCE_KM]
+    )
     selected_x_unit_col = {
         TIME_S: "time",
         DISTANCE_KM: "distance_km",
@@ -31,34 +33,40 @@ selected_activity_streams = streams_df.loc[
     speed_kmh=lambda df: df.velocity_smooth * 3.6,
 )
 
-base = (
-    alt.Chart(selected_activity_streams)
-    .transform_window(
-        rolling_mean_speed_kmh="mean(speed_kmh)",
-        rolling_mean_heartrate="mean(heartrate)",
-        frame=[-smooth_span, 0],
-    )
-    .encode(
-        x=alt.X(selected_x_unit_col, type="quantitative").title(selected_x_unit_label)
-    )
+x_axis = alt.X(selected_x_unit_col, type="quantitative", title="").axis(labels=False)
+
+base = alt.Chart(selected_activity_streams).transform_window(
+    rolling_mean_speed_kmh="mean(speed_kmh)",
+    frame=[-smooth_span, 0],
 )
 
 speed_chart = base.mark_line().encode(
+    x=x_axis,
     y=alt.Y(
-        "rolling_mean_speed_kmh", type="quantitative", scale=alt.Scale(domain=[0, 25])
-    ).title("Speed (Km/h)")
+        "rolling_mean_speed_kmh",
+        type="quantitative",
+    ).title("Speed (Km/h)"),
 )
 
 heartrate_chart = base.mark_line().encode(
-    y=alt.Y(
-        "rolling_mean_heartrate", type="quantitative", scale=alt.Scale(domain=[90, 190])
-    ).title("Heartrate (/min)")
+    x=x_axis,
+    y=alt.Y("heartrate", type="quantitative", scale=alt.Scale(domain=[90, 190])).title(
+        "Heartrate (/min)"
+    ),
 )
+
+altitude_chart = base.mark_area(interpolate="natural", line=True).encode(
+    x=x_axis.title(selected_x_unit_label).axis(labels=True),
+    y=alt.Y("altitude", type="quantitative", title="Altitude (m)"),
+)
+
+global_width = 900
 
 chart = (
     (
-        speed_chart.properties(height=200, width=900)
-        & heartrate_chart.properties(height=200, width=900)
+        speed_chart.properties(height=200, width=global_width)
+        & heartrate_chart.properties(height=120, width=global_width)
+        & altitude_chart.properties(height=120, width=global_width)
     )
     .interactive(bind_y=False)
     .resolve_scale(y="independent")

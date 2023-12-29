@@ -87,13 +87,24 @@ def update_cache() -> None:
             types=STRAVA_STREAM_TYPES,
         )
 
-        pd.DataFrame(
-            {
-                key: activity_streams[key].data
-                for key in ["distance", *STRAVA_STREAM_TYPES]
-                if key in activity_streams.keys()
-            }
-        ).to_csv(_get_streams_file(activity))
+        (
+            pd.DataFrame(
+                {
+                    key: activity_streams[key].data
+                    for key in ["distance", *STRAVA_STREAM_TYPES]
+                    if key in activity_streams.keys()
+                }
+            )
+            .pipe(
+                lambda df: df.join(
+                    df.latlng.apply(pd.Series).rename(
+                        columns={0: "latitude", 1: "longitude"}
+                    )
+                )
+            )
+            .drop(columns=["latlng"])
+            .to_csv(_get_streams_file(activity))
+        )
 
     st.success(f"Downloaded data for {len(activities_to_be_downloaded)} activities.")
 

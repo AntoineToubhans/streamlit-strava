@@ -121,6 +121,7 @@ chart = (
 
 st.altair_chart(chart, use_container_width=True)
 
+st.map(sampled_selected_activity_streams, size=1)
 
 st.write("---")
 col_a, col_b = st.columns(2)

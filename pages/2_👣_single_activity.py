@@ -37,6 +37,14 @@ sampled_selected_activity_streams = selected_activity_streams.iloc[
     :: len(selected_activity_streams) // N_POINTS
 ]
 
+st.write(
+    f"""
+### 🏃{selected_activity['name']} \
+🕰️ {selected_activity.start_date.strftime('%d/%m/%Y %H:%M')} \
+📏 {selected_activity.distance/1000:.2f} km
+"""
+)
+
 x_axis = alt.X(selected_x_unit_col, type="quantitative", title="").axis(labels=False)
 
 base = alt.Chart(sampled_selected_activity_streams).transform_window(

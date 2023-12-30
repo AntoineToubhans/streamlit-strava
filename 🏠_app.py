@@ -4,7 +4,9 @@ from utils.data_cache import load_data_from_cache, update_cache
 from utils.strava import get_strava_client, st_strava_authorization_button
 
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_icon=":running:", page_title="Streamlit data app", layout="wide"
+)
 
 activities_df, streams_df = load_data_from_cache()
 

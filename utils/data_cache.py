@@ -9,7 +9,7 @@ import streamlit as st
 from constants import (
     DATA_PATH,
     STRAVA_FIRST_ACTIVITY_START_DATE,
-    STRAVA_RUN_SPORT_TYPE,
+    STRAVA_RUN_SPORT_TYPES,
     STRAVA_STREAM_TYPES,
 )
 from utils.strava import get_strava_client
@@ -49,7 +49,7 @@ def update_cache() -> None:
         for activity in strava_client.get_activities(
             after=STRAVA_FIRST_ACTIVITY_START_DATE, limit=None
         )
-        if activity.sport_type == STRAVA_RUN_SPORT_TYPE
+        if activity.sport_type in STRAVA_RUN_SPORT_TYPES
     ]
 
     st.success(f"Found (total) {len(activities)} activities.")

@@ -9,6 +9,9 @@ from utils.data import get_temporal_grouper
 
 
 # %% 0. Load data
+DISTANCE_KM = "Distance (km)"
+TIME_S = "Time (s)"
+
 years_df = pd.DataFrame(
     {
         "date": [datetime.datetime(year, 1, 1) for year in [2022, 2023, 2024]],
@@ -19,22 +22,25 @@ years_df = pd.DataFrame(
 activities_df, streams_df = load_data_from_cache()
 with st.sidebar:
     pd_grouper, alt_timeunit = get_temporal_grouper(key="zone-stats")
+    selected_y_unit_label = st.selectbox(label="Y unit", options=[TIME_S, DISTANCE_KM])
+    selected_y_unit = {
+        TIME_S: "duration",
+        DISTANCE_KM: "distance_km",
+    }[selected_y_unit_label]
+
 
 # %% 1. Process data
 zone_speed_streams_df = (
     streams_df.merge(
-        activities_df.rename(
-            columns={
-                "id": "activity_id",
-                "distance": "total_distance",
-            }
+        activities_df.rename(columns={"id": "activity_id"}).filter(
+            items=["activity_id", "start_date"]
         ),
         on="activity_id",
     )
-    .filter(items=["start_date", "speed_zone"])
-    .assign(duration=1)
+    .assign(distance_km=lambda df: df.velocity_smooth / 1000, duration=1)
+    .filter(items=["start_date", "speed_zone", "distance_km", "duration"])
     .groupby([pd_grouper, "speed_zone"], as_index=False)
-    .duration.sum()
+    .sum()
 )
 
 # %% 2. Common alt parts
@@ -64,6 +70,8 @@ base = (
 )
 
 # %% 3. Define charts
+y_axis = alt.Y(selected_y_unit, type="quantitative")
+
 abs_zone_bars = base.encode(
     x=alt.X(
         "start_date",
@@ -72,7 +80,7 @@ abs_zone_bars = base.encode(
         axis=alt.Axis(labels=False),
         scale=alt.Scale(domain=brush),
     ).title(""),
-    y=alt.Y("duration:Q").title("Time (s)"),
+    y=y_axis.title(selected_y_unit_label),
 ).transform_filter(legend_selection)
 
 normalized_zones_bars = base.encode(
@@ -83,7 +91,7 @@ normalized_zones_bars = base.encode(
         axis=alt.Axis(format="%d %b %y", labelOverlap=False, labelAngle=-45),
         scale=alt.Scale(domain=brush),
     ).title(""),
-    y=alt.Y("duration:Q").stack("normalize").title("Time ratio (%)"),
+    y=y_axis.stack("normalize").title("Ratio (%)"),
 )
 
 distance_area = (

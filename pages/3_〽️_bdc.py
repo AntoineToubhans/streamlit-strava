@@ -15,11 +15,27 @@ AVAILABLE_TARGETS = {
         "target_km": 2600,
         "start_date": datetime.date(2023, 1, 1),
         "end_date": datetime.date(2023, 12, 31),
+        "exclude": [
+            {
+                "start_date": datetime.date(2023, 7, 31),
+                "end_date": datetime.date(2023, 8, 20),
+            },
+        ],
     },
     "2024": {
         "target_km": 3200,
         "start_date": datetime.date(2024, 1, 1),
         "end_date": datetime.date(2024, 12, 31),
+        "exclude": [
+            {
+                "start_date": datetime.date(2024, 7, 29),
+                "end_date": datetime.date(2024, 8, 25),
+            },
+            {
+                "start_date": datetime.date(2024, 12, 7),
+                "end_date": datetime.date(2024, 12, 20),
+            },
+        ],
     },
 }
 
@@ -32,6 +48,7 @@ with st.sidebar:
     start_date = target["start_date"]
     end_date = target["end_date"]
     target_km = target["target_km"]
+    exclude_list = target["exclude"]
 
     st.write(
         f"""
@@ -40,13 +57,23 @@ with st.sidebar:
 """
     )
 
+# %% Format data with pandas
 date_range_index = pd.date_range(
     start=start_date,
     end=end_date,
     freq="D",
 )
-date_range_df = pd.DataFrame(
-    index=date_range_index, data={"target_km_day": target_km / len(date_range_index)}
+date_range_serie = pd.Series(index=date_range_index, data=date_range_index).dt.date
+is_day_active = pd.Series(index=date_range_index, data=True)
+for exclusion_period in exclude_list:
+    is_day_active = is_day_active & (
+        (date_range_serie < exclusion_period["start_date"])
+        | (date_range_serie > exclusion_period["end_date"])
+    )
+target_km_day = target_km / is_day_active.sum()
+
+date_range_df = pd.DataFrame(index=date_range_index).assign(
+    target_km_day=is_day_active * target_km_day
 )
 
 target_bdc_df = (
@@ -170,7 +197,7 @@ vertical_line_selection = (
 
 # %% Final and rendering
 top_chart = (realized_chart + target_chart + vertical_line_selection).properties(
-    width=900, height=360
+    width=900, height=340
 )
 bottom_chart = (delta_chart + vertical_line_rule).properties(width=900, height=90)
 

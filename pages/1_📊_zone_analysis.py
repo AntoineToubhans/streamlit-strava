@@ -11,6 +11,8 @@ from utils.data import get_temporal_grouper
 # %% 0. Load data
 DISTANCE_KM = "Distance (km)"
 TIME_S = "Time (s)"
+TODAY = datetime.datetime.now().date()
+TODAY_P_14 = TODAY + datetime.timedelta(days=14)
 
 years_df = pd.DataFrame(
     {
@@ -109,6 +111,13 @@ distance_area = (
             timeUnit=alt_timeunit,
             type="temporal",
             axis=alt.Axis(format="%d %b", labelOverlap=False, labelAngle=-45),
+            scale=alt.Scale(
+                domainMax={
+                    "year": TODAY_P_14.year,
+                    "month": TODAY_P_14.month,
+                    "date": TODAY_P_14.day,
+                }
+            ),
         ).title(""),
         y=alt.Y("sum(distance):Q").title("Distance (km)"),
     )

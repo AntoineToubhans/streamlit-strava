@@ -37,6 +37,12 @@ AVAILABLE_TARGETS = {
             },
         ],
     },
+    "Prépa Marathon 2024": {
+        "target_km": 1000,
+        "start_date": datetime.date(2024, 1, 1),
+        "end_date": datetime.date(2024, 4, 7),
+        "exclude": [],
+    },
 }
 
 activities_df, streams_df = load_data_from_cache()

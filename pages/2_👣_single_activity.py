@@ -23,7 +23,9 @@ with st.sidebar:
         DISTANCE_KM: "distance_km",
     }[selected_x_unit_label]
 
-    smooth_span = st.slider(label="Smooth span", value=10, min_value=1, max_value=100)
+    rolling_window = st.slider(
+        label="Smooth span", value=10, min_value=1, max_value=100
+    )
 
 
 selected_activity = activities_df.loc[selected_activity_idx]
@@ -31,7 +33,10 @@ selected_activity_streams = streams_df.loc[
     lambda df: df.activity_id == selected_activity.id
 ].assign(
     distance_km=lambda df: df.distance / 1000,
-    speed_kmh=lambda df: df.velocity_smooth * 3.6,
+    speed_ms=lambda df: df.velocity_smooth.rolling(
+        window=rolling_window, center=True, min_periods=1
+    ).mean(),
+    speed_kmh=lambda df: df.speed_ms * 3.6,
 )
 sampled_selected_activity_streams = selected_activity_streams.iloc[
     :: len(selected_activity_streams) // N_POINTS
@@ -47,9 +52,12 @@ st.write(
 
 x_axis = alt.X(selected_x_unit_col, type="quantitative", title="").axis(labels=False)
 
-base = alt.Chart(sampled_selected_activity_streams).transform_window(
-    rolling_mean_speed_kmh="mean(speed_kmh)",
-    frame=[-smooth_span, 0],
+base = alt.Chart(sampled_selected_activity_streams).encode(
+    tooltip=[
+        alt.Tooltip(f"{selected_x_unit_col}:Q", title=selected_x_unit_label),
+        alt.Tooltip("speed_kmh:Q", title="Speed (km/h)"),
+        alt.Tooltip("heartrate:Q", title="Heartrate (/min)"),
+    ],
 )
 
 # %% Line tooltip
@@ -86,11 +94,11 @@ speed_chart = add_vertical_line_tooltip(
     base_chart=base.mark_line().encode(
         x=x_axis,
         y=alt.Y(
-            "rolling_mean_speed_kmh",
+            "speed_kmh",
             type="quantitative",
         ).title("Speed (Km/h)"),
     ),
-    tooltip_text=alt.Text("rolling_mean_speed_kmh:Q", format=".2f"),
+    tooltip_text=alt.Text("speed_kmh:Q", format=".2f"),
 )
 
 heartrate_chart = add_vertical_line_tooltip(

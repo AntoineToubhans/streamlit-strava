@@ -50,6 +50,11 @@ st.write(
 """
 )
 
+st.link_button(
+    label="Link to Strava activity",
+    url=f"https://www.strava.com/activities/{selected_activity.id}",
+)
+
 x_axis = alt.X(selected_x_unit_col, type="quantitative", title="").axis(labels=False)
 
 base = alt.Chart(sampled_selected_activity_streams).encode(

@@ -8,6 +8,7 @@ import streamlit as st
 
 from constants import (
     DATA_PATH,
+    DOWNLOAD_LIMIT,
     STRAVA_FIRST_ACTIVITY_START_DATE,
     STRAVA_RUN_SPORT_TYPES,
     STRAVA_STREAM_TYPES,
@@ -79,6 +80,13 @@ def update_cache() -> None:
         activity for activity in activities if not _get_streams_file(activity).exists()
     ]
     st.info(f"{len(activities) - len(activities_to_be_downloaded)} already in cache.")
+
+    if len(activities_to_be_downloaded) > DOWNLOAD_LIMIT:
+        st.warning(
+            f"Too much activities to be downloaded: it will download {DOWNLOAD_LIMIT} first, hit the download button later for the rest"
+        )
+        activities_to_be_downloaded = activities_to_be_downloaded[:DOWNLOAD_LIMIT]
+
     st.info(f"Downloading data for {len(activities_to_be_downloaded)} activities ...")
 
     for activity in stqdm(activities_to_be_downloaded, desc="Collecting streams"):

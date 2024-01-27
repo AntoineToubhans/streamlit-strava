@@ -3,6 +3,7 @@ import yaml
 
 # ------ Data
 DATA_PATH = Path("./cache")
+DOWNLOAD_LIMIT = 50
 STRAVA_PARAMS_FILE = "strava.yaml"
 
 with open(STRAVA_PARAMS_FILE) as f:

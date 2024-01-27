@@ -5,16 +5,6 @@ import streamlit as st
 from constants import STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
 
 
-def _get_strava_code() -> str | None:
-    strava_codes = st.experimental_get_query_params().get("code")
-    if strava_codes is None or strava_codes == []:
-        return None
-    strava_code = strava_codes[0]
-    if strava_code == "":
-        return None
-    return strava_code
-
-
 @st.cache_resource
 def _get_strava_client() -> StravaClient:
     return StravaClient()
@@ -24,7 +14,7 @@ def get_strava_client() -> StravaClient:
     client = _get_strava_client()
 
     if not client.access_token:
-        strava_code = _get_strava_code()
+        strava_code = st.query_params.get("code")
         if strava_code:
             try:
                 token_response = client.exchange_code_for_token(
@@ -36,7 +26,7 @@ def get_strava_client() -> StravaClient:
                 client.refresh_token = token_response["refresh_token"]
                 client.expires_at = token_response["expires_at"]
             except Exception:
-                st.experimental_set_query_params(code="")
+                st.query_params.clear()
                 st.rerun()
     else:
         if time.time() > client.expires_at:

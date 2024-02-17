@@ -1,9 +1,11 @@
 import streamlit as st
 import altair as alt
 
+from utils.data import stop_if_no_activities
 from utils.data_cache import load_data_from_cache
 
 activities_df, streams_df = load_data_from_cache()
+stop_if_no_activities(activities_df)
 
 st.warning("🚧WIP")
 

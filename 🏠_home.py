@@ -16,13 +16,26 @@ st_cols = st.columns([2, 2, 3, 3, 3])
 st_cols[0].metric(label="Activities", value=len(activities_df))
 st_cols[1].metric(label="Point of data", value=len(streams_df))
 st_cols[2].metric(
-    label="Last activity", value=activities_df.start_date.max().strftime("%d %b %y")
+    label="Last activity",
+    value=(
+        "-"
+        if activities_df.empty
+        else activities_df.start_date.max().strftime("%d %b %y")
+    ),
 )
 st_cols[3].metric(
-    label="Total distance", value=f"{activities_df.distance.sum() / 1000:.2f} km"
+    label="Total distance",
+    value=(
+        "-" if activities_df.empty else f"{activities_df.distance.sum() / 1000:.2f} km"
+    ),
 )
 st_cols[4].metric(
-    label="Total time", value=f"{activities_df.moving_time.sum() / 3600:.2f} hours"
+    label="Total time",
+    value=(
+        "-"
+        if activities_df.empty
+        else f"{activities_df.moving_time.sum() / 3600:.2f} hours"
+    ),
 )
 st.write("---")
 

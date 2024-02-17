@@ -3,4 +3,4 @@ Strava-Data
 
 Install: `poetry install` (requires python>=3.11)
 
-Run app: `poetry run streamlit run 🏠_app.py`
+Run app: `poetry run streamlit run 🏠_home.py`

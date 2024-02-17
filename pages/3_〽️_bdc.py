@@ -4,6 +4,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+from utils.data import stop_if_no_activities
 from utils.data_cache import load_data_from_cache
 
 POSITIVE_COLOR = "darkseagreen"
@@ -46,6 +47,7 @@ AVAILABLE_TARGETS = {
 }
 
 activities_df, streams_df = load_data_from_cache()
+stop_if_no_activities(activities_df)
 
 with st.sidebar:
     target_label = st.selectbox(label="Select target", options=AVAILABLE_TARGETS.keys())

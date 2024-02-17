@@ -1,6 +1,7 @@
 import altair as alt
 import streamlit as st
 
+from utils.data import stop_if_no_activities
 from utils.data_cache import load_data_from_cache
 
 DISTANCE_KM = "Distance (km)"
@@ -8,6 +9,7 @@ TIME_S = "Time (s)"
 N_POINTS = 500  # for sampling
 
 activities_df, streams_df = load_data_from_cache()
+stop_if_no_activities(activities_df)
 
 with st.sidebar:
     selected_activity_idx = st.selectbox(

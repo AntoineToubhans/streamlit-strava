@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from utils.data_cache import load_data_from_cache
-from utils.data import get_temporal_grouper
+from utils.data import get_temporal_grouper, stop_if_no_activities
 
 
 # %% 0. Load data
@@ -22,6 +22,8 @@ years_df = pd.DataFrame(
 
 
 activities_df, streams_df = load_data_from_cache()
+stop_if_no_activities(activities_df)
+
 with st.sidebar:
     pd_grouper, alt_timeunit = get_temporal_grouper(key="zone-stats")
     selected_y_unit_label = st.selectbox(label="Y unit", options=[TIME_S, DISTANCE_KM])

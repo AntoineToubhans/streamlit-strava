@@ -2,10 +2,12 @@ import altair as alt
 import streamlit as st
 
 from utils.data_cache import load_data_from_cache
-from utils.data import get_temporal_grouper
+from utils.data import get_temporal_grouper, stop_if_no_activities
 
 
 activities_df, streams_df = load_data_from_cache()
+stop_if_no_activities(activities_df)
+
 with st.sidebar:
     pd_grouper, _ = get_temporal_grouper(key="global-volume")
 

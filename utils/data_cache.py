@@ -17,11 +17,20 @@ from utils.strava import get_strava_client
 from utils.zones import get_speed_zone_label
 
 
+ACTIVITIES_FILEPATH = DATA_PATH / "activities.csv"
+
+
 @st.cache_data
 def load_data_from_cache() -> tuple[pd.DataFrame, pd.DataFrame]:
+    if not ACTIVITIES_FILEPATH.exists():
+        return pd.DataFrame(), pd.DataFrame()
+
     activities = pd.read_csv(
-        DATA_PATH / "activities.csv", index_col=0, parse_dates=["start_date"]
+        ACTIVITIES_FILEPATH, index_col=0, parse_dates=["start_date"]
     )
+
+    if activities.empty:
+        return activities, pd.DataFrame()
 
     streams = pd.concat(
         [
@@ -55,31 +64,14 @@ def update_cache() -> None:
 
     st.success(f"Found (total) {len(activities)} activities.")
 
-    pd.DataFrame(
-        [
-            {
-                "id": activity.id,
-                "average_cadence": activity.average_cadence,
-                "average_heartrate": activity.average_heartrate,
-                "average_speed": activity.average_speed.num,
-                "description": activity.description,
-                "distance": activity.distance.num,
-                "elapsed_time": activity.elapsed_time.seconds,
-                "kudos_count": activity.kudos_count,
-                "max_heartrate": activity.max_heartrate,
-                "moving_time": activity.moving_time.seconds,
-                "name": activity.name,
-                "start_date": activity.start_date,
-            }
-            for activity in activities
-        ]
-    ).to_csv(DATA_PATH / "activities.csv")
-
     # 2. Download missing activity streams
-    activities_to_be_downloaded = [
-        activity for activity in activities if not _get_streams_file(activity).exists()
-    ]
-    st.info(f"{len(activities) - len(activities_to_be_downloaded)} already in cache.")
+    activities_to_be_downloaded, activities_already_in_cache = [], []
+    for activity in activities:
+        (activities_to_be_downloaded, activities_already_in_cache)[
+            _get_streams_file(activity).exists()
+        ].append(activity)
+
+    st.info(f"{len(activities_already_in_cache)} already in cache.")
 
     if len(activities_to_be_downloaded) > DOWNLOAD_LIMIT:
         st.warning(
@@ -89,6 +81,7 @@ def update_cache() -> None:
 
     st.info(f"Downloading data for {len(activities_to_be_downloaded)} activities ...")
 
+    # 2.1 Write stream csv files
     for activity in stqdm(activities_to_be_downloaded, desc="Collecting streams"):
         activity_streams = strava_client.get_activity_streams(
             activity_id=activity.id,
@@ -113,6 +106,27 @@ def update_cache() -> None:
             .drop(columns=["latlng"])
             .to_csv(_get_streams_file(activity))
         )
+
+    # 2.2 Write activities.csv file after, to keep file consistencies
+    pd.DataFrame(
+        [
+            {
+                "id": activity.id,
+                "average_cadence": activity.average_cadence,
+                "average_heartrate": activity.average_heartrate,
+                "average_speed": activity.average_speed.num,
+                "description": activity.description,
+                "distance": activity.distance.num,
+                "elapsed_time": activity.elapsed_time.seconds,
+                "kudos_count": activity.kudos_count,
+                "max_heartrate": activity.max_heartrate,
+                "moving_time": activity.moving_time.seconds,
+                "name": activity.name,
+                "start_date": activity.start_date,
+            }
+            for activity in activities_already_in_cache + activities_to_be_downloaded
+        ]
+    ).to_csv(ACTIVITIES_FILEPATH)
 
     st.success(f"Downloaded data for {len(activities_to_be_downloaded)} activities.")
 

@@ -48,6 +48,23 @@ def _get_streams_file(activity: stravalib.model.Activity) -> Path:
     return DATA_PATH / f"{activity.id}.csv"
 
 
+def _parse_latlng(df: pd.DataFrame, activity_id: int) -> pd.DataFrame:
+    if "latlng" not in df.columns:
+        return df
+
+    try:
+        df_with_latlng = df.join(
+            df.latlng.apply(pd.Series).rename(columns={0: "latitude", 1: "longitude"})
+        )
+    except Exception as e:
+        st.warning(f"Fail to parse lat/lng for activity ID={activity_id}")
+        print(f"Fail to parse lat/lng for activity ID={activity_id}")
+        print(e)
+        df_with_latlng = df
+
+    return df_with_latlng.drop(columns=["latlng"])
+
+
 def update_cache() -> None:
     DATA_PATH.mkdir(exist_ok=True)
     strava_client = get_strava_client()
@@ -96,14 +113,7 @@ def update_cache() -> None:
                     if key in activity_streams.keys()
                 }
             )
-            .pipe(
-                lambda df: df.join(
-                    df.latlng.apply(pd.Series).rename(
-                        columns={0: "latitude", 1: "longitude"}
-                    )
-                )
-            )
-            .drop(columns=["latlng"])
+            .pipe(_parse_latlng, activity_id=activity.id)
             .to_csv(_get_streams_file(activity))
         )
 

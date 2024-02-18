@@ -41,7 +41,7 @@ selected_activity_streams = streams_df.loc[
     speed_kmh=lambda df: df.speed_ms * 3.6,
 )
 sampled_selected_activity_streams = selected_activity_streams.iloc[
-    :: len(selected_activity_streams) // N_POINTS
+    :: max(len(selected_activity_streams) // N_POINTS, 1)
 ]
 
 st.write(
@@ -135,8 +135,10 @@ chart = (
 ).interactive(bind_y=False)
 
 st.altair_chart(chart, use_container_width=True)
-
-st.map(sampled_selected_activity_streams, size=1)
+st.map(
+    sampled_selected_activity_streams.filter(items=["latitude", "longitude"]).dropna(),
+    size=1,
+)
 
 st.write("---")
 col_a, col_b = st.columns(2)

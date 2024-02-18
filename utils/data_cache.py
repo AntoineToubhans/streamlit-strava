@@ -27,7 +27,7 @@ def load_data_from_cache() -> tuple[pd.DataFrame, pd.DataFrame]:
 
     activities = pd.read_csv(
         ACTIVITIES_FILEPATH, index_col=0, parse_dates=["start_date"]
-    )
+    ).sort_values(by="start_date")
 
     if activities.empty:
         return activities, pd.DataFrame()
@@ -94,7 +94,7 @@ def update_cache() -> None:
         st.warning(
             f"Too much activities to be downloaded: it will download {DOWNLOAD_LIMIT} first, hit the download button later for the rest"
         )
-        activities_to_be_downloaded = activities_to_be_downloaded[:DOWNLOAD_LIMIT]
+        activities_to_be_downloaded = activities_to_be_downloaded[-DOWNLOAD_LIMIT:]
 
     st.info(f"Downloading data for {len(activities_to_be_downloaded)} activities ...")
 

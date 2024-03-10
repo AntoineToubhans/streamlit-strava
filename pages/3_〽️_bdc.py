@@ -29,12 +29,12 @@ AVAILABLE_TARGETS = {
         "end_date": datetime.date(2024, 12, 31),
         "exclude": [
             {
-                "start_date": datetime.date(2024, 7, 29),
-                "end_date": datetime.date(2024, 8, 25),
+                "start_date": datetime.date(2024, 1, 29),
+                "end_date": datetime.date(2024, 2, 11),
             },
             {
-                "start_date": datetime.date(2024, 12, 7),
-                "end_date": datetime.date(2024, 12, 20),
+                "start_date": datetime.date(2024, 7, 29),
+                "end_date": datetime.date(2024, 8, 25),
             },
         ],
     },

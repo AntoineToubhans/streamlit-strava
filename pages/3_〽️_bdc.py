@@ -12,16 +12,11 @@ NEGATIVE_COLOR = "indianred"
 TARGET_COLOR = "orange"
 
 AVAILABLE_TARGETS = {
-    "2023": {
-        "target_km": 2600,
-        "start_date": datetime.date(2023, 1, 1),
-        "end_date": datetime.date(2023, 12, 31),
-        "exclude": [
-            {
-                "start_date": datetime.date(2023, 7, 31),
-                "end_date": datetime.date(2023, 8, 20),
-            },
-        ],
+    "2025": {
+        "target_km": 4000,
+        "start_date": datetime.date(2025, 1, 1),
+        "end_date": datetime.date(2025, 12, 31),
+        "exclude": [],
     },
     "2024": {
         "target_km": 2200,
@@ -37,7 +32,18 @@ AVAILABLE_TARGETS = {
                 "end_date": datetime.date(2024, 7, 1),
             },
         ],
-    }
+    },
+    "2023": {
+        "target_km": 2600,
+        "start_date": datetime.date(2023, 1, 1),
+        "end_date": datetime.date(2023, 12, 31),
+        "exclude": [
+            {
+                "start_date": datetime.date(2023, 7, 31),
+                "end_date": datetime.date(2023, 8, 20),
+            },
+        ],
+    },
 }
 
 activities_df, streams_df = load_data_from_cache()

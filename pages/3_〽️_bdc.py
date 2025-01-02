@@ -62,6 +62,8 @@ with st.sidebar:
         f"""
 - 🎯 {target_km} km    
 - ⏰ from {start_date.strftime('%d %b %y')} to {end_date.strftime('%d %b %y')}
+- 1️⃣ {target_km/365:.2f} km daily
+- 7️⃣ {target_km/365*7:.2f} km weekly
 """
     )
 

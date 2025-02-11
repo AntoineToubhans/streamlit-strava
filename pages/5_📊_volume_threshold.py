@@ -42,7 +42,7 @@ cumulated_at_speed_range_df = (
     .groupby([pd_grouper], as_index=False)
     .sum()
     .sort_values(by=selected_y_unit, ascending=False)
-    .head(30)
+    .head(25)
     .assign(
         tooltip_duration=lambda df: df.duration.apply(
             lambda x: str(timedelta(seconds=x))
@@ -51,28 +51,29 @@ cumulated_at_speed_range_df = (
     )
 )
 
-chart = (
+chart_bar = (
     alt.Chart(cumulated_at_speed_range_df)
-    .mark_bar(point=True)
     .encode(
-        x=alt.X(
-            "start_date",
-            type="ordinal",
-            axis=alt.Axis(
-                format="%d %b %y", formatType="time", labelOverlap=False, labelAngle=-45
-            ),
-            sort=None,
-        ).title(""),
-        y=alt.Y(
+        x=alt.XError(
             selected_y_unit,
             type="quantitative",
             title=selected_y_unit,
         ),
+        y=alt.Y(
+            "start_date",
+            type="ordinal",
+            axis=alt.Axis(format="%d %b %Y", formatType="time"),
+            sort=None,
+        ).title(""),
         color="year(start_date):N",
         tooltip=f"tooltip_{selected_y_unit}",
     )
-    .properties(title="")
-    .configure_legend(title=None)
+    .mark_bar(point=True)
 )
+
+chart_text = chart_bar.encode(text=f"tooltip_{selected_y_unit}").mark_text(
+    align="left", dx=2
+)
+chart = (chart_bar + chart_text).properties(title="").configure_legend(title=None)
 
 st.altair_chart(chart, use_container_width=True)

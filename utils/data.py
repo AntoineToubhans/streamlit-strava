@@ -57,7 +57,15 @@ def st_speed_range_selector(key: str | None = None) -> tuple[float, float]:
         key=f"slider-{key}" if key else None,
     )
 
-    return (
-        1000 / (max_speed_range.minute * 60 + max_speed_range.second),
-        1000 / (min_speed_range.minute * 60 + min_speed_range.second),
+    max_speed_range_ms = (
+        1000
+        if max_speed_range <= MAX_SPEED_RANGE
+        else 1000 / (max_speed_range.minute * 60 + max_speed_range.second)
     )
+    min_speed_range_ms = (
+        0
+        if min_speed_range >= MIN_SPEED_RANGE
+        else 1000 / (min_speed_range.minute * 60 + min_speed_range.second)
+    )
+
+    return max_speed_range_ms, min_speed_range_ms

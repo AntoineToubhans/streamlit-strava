@@ -16,7 +16,7 @@ TODAY_P_14 = TODAY + datetime.timedelta(days=14)
 
 years_df = pd.DataFrame(
     {
-        "date": [datetime.datetime(year, 1, 1) for year in [2022, 2023, 2024]],
+        "date": [datetime.datetime(year, 1, 1) for year in [2022, 2023, 2024, 2025]],
     }
 )
 

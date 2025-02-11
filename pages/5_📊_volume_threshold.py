@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import altair as alt
 import pandas as pd
 import streamlit as st
@@ -41,7 +43,12 @@ cumulated_at_speed_range_df = (
     .sum()
     .sort_values(by=selected_y_unit, ascending=False)
     .head(30)
-    .assign(tooltip=lambda df: df[selected_y_unit])
+    .assign(
+        tooltip_duration=lambda df: df.duration.apply(
+            lambda x: str(timedelta(seconds=x))
+        ),
+        tooltip_distance_km=lambda df: df.distance_km.apply(lambda x: f"{x:.2f} km"),
+    )
 )
 
 chart = (
@@ -62,7 +69,7 @@ chart = (
             title=selected_y_unit,
         ),
         color="year(start_date):N",
-        tooltip="tooltip",
+        tooltip=f"tooltip_{selected_y_unit}",
     )
     .properties(title="")
     .configure_legend(title=None)

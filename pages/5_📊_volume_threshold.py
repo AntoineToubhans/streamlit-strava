@@ -54,11 +54,16 @@ cumulated_at_speed_range_df = (
             lambda row: f"{row['start_date']:%d %b %Y} | {row['distance_km']:.2f} km",
             axis=1,
         ),
+        yearquarter=lambda df: (
+            df.start_date.dt.to_period("Q").astype(str).str.replace("Q", " Q")
+        ),
     )
 )
 
 
 # %% Define graphs
+legend_selection = alt.selection_point(fields=["yearquarter"], bind="legend")
+
 chart_bar = (
     alt.Chart(cumulated_at_speed_range_df)
     .encode(
@@ -68,15 +73,18 @@ chart_bar = (
             title=selected_y_unit_label,
         ),
         y=alt.Y("order:O", title=""),
-        color=alt.Color("yearquarter(start_date):O", scale=alt.Scale(scheme="viridis")),
+        color=alt.Color("yearquarter:O", scale=alt.Scale(scheme="viridis")),
         tooltip=f"tooltip_{selected_y_unit}",
+        opacity=alt.condition(legend_selection, alt.value(1), alt.value(0.2)),
     )
     .mark_bar(cornerRadius=2)
+    .add_params(legend_selection)
 )
 
 chart_text = chart_bar.encode(
     color=alt.value("white"), text=f"tooltip_{selected_y_unit}"
 ).mark_text(align="right", dx=-5, dy=2, fontWeight="bold")
+
 chart = (chart_bar + chart_text).properties(title="").configure_legend(title=None)
 
 st.altair_chart(chart, use_container_width=True)

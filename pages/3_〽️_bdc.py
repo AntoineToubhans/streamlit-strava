@@ -59,12 +59,11 @@ with st.sidebar:
     exclude_list = target["exclude"]
 
     st.write(
-        f"""
-- 🎯 {target_km} km    
+        f"""---
+- 🎯 {target_km} km
 - ⏰ from {start_date.strftime('%d %b %y')} to {end_date.strftime('%d %b %y')}
 - 1️⃣ {target_km/365:.2f} km daily
-- 7️⃣ {target_km/365*7:.2f} km weekly
-"""
+- 7️⃣ {target_km/365*7:.2f} km weekly"""
     )
 
 # %% Format data with pandas
@@ -124,6 +123,15 @@ st.progress(
     text=f"{status_emojy} {100 * percentage_progress:.2f}% ({total_km:.2f}km / {target_km:.2f}km)",
     value=min(1.0, percentage_progress),
 )
+nb_days_since_beginning = (datetime.datetime.now().date() - start_date).days
+with st.sidebar:
+    st.write(
+        f"""---
+- {nb_days_since_beginning} days since begining
+- 1️⃣ {total_km/nb_days_since_beginning:.2f} km daily
+- 7️⃣ {total_km/nb_days_since_beginning*7:.2f} km weekly"""
+    )
+
 
 # %% Graph
 end_date_plus_1 = end_date + datetime.timedelta(days=1)

@@ -1,6 +1,6 @@
 Strava-Data
 ===
 
-Install: `poetry install` (requires python>=3.11)
+Install with `uv`:  `uv sync`
 
-Run app: `poetry run streamlit run 🏠_home.py`
+Run app: `uv run streamlit run 🏠_home.py`
